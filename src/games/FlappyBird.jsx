@@ -1,102 +1,99 @@
-import React, { useEffect, useRef, useState } from 'react'
-import useGameLoop from '../hooks/useGameLoop'
+import React, { useEffect } from 'react'
 
-const GRAVITY = 0.5
-const JUMP = -8
-const PIPE_WIDTH = 50
-const PIPE_GAP = 120
+/**
+ * Simple Flappy Bird demo:
+ * Click or Space/Enter to flap.
+ */
+export default function FlappyBird({ soundOn }) {
+  useEffect(() => {
+    const cvs = document.getElementById('flappy-cvs')
+    const ctx = cvs.getContext('2d')
+    cvs.width = 320
+    cvs.height = 208
 
-const FlappyBird = () => {
-  const canvasRef = useRef(null)
-  const [bird, setBird] = useState({ x: 50, y: 150, velocity: 0 })
-  const [pipes, setPipes] = useState([])
-  const [score, setScore] = useState(0)
+    let y = 100
+    let vy = 0
+    const gravity = 0.6
+    const flapPower = -8
+    const pipes = []
+    let frame = 0
+    let running = true
 
-  const reset = () => {
-    setBird({ x: 50, y: 150, velocity: 0 })
-    setPipes([])
-    setScore(0)
-  }
-
-  const jump = () => setBird({ ...bird, velocity: JUMP })
-
-  const update = () => {
-    let newBird = {
-      ...bird,
-      velocity: bird.velocity + GRAVITY,
-      y: bird.y + bird.velocity,
-    }
-    if (newBird.y < 0) newBird.y = 0
-    if (newBird.y > 300) return reset()
-
-    let newPipes = pipes.map((pipe) => ({ ...pipe, x: pipe.x - 2 }))
-
-    if (newPipes.length === 0 || newPipes[newPipes.length - 1].x < 200) {
-      const topHeight = Math.floor(Math.random() * 150) + 50
-      newPipes.push({ x: 400, top: topHeight })
+    function newPipe() {
+      const gap = 50 + Math.random() * 50
+      const top = 20 + Math.random() * 80
+      pipes.push({ x: cvs.width, top, gap })
     }
 
-    newPipes = newPipes.filter((p) => p.x + PIPE_WIDTH > 0)
+    function draw() {
+      if (!running) return
+      ctx.fillStyle = '#08302a'
+      ctx.fillRect(0, 0, cvs.width, cvs.height)
 
-    for (let pipe of newPipes) {
-      if (
-        bird.x + 20 > pipe.x &&
-        bird.x < pipe.x + PIPE_WIDTH &&
-        (bird.y < pipe.top || bird.y + 20 > pipe.top + PIPE_GAP)
-      ) {
-        return reset()
+      vy += gravity
+      y += vy
+      if (y > cvs.height) {
+        y = 100
+        vy = 0
+        pipes.length = 0
       }
-      if (pipe.x === bird.x) setScore((s) => s + 1)
+
+      if (frame % 90 === 0) newPipe()
+      for (let i = 0; i < pipes.length; i++) pipes[i].x -= 2.6
+      while (pipes.length && pipes[0].x < -60) pipes.shift()
+
+      ctx.fillStyle = '#2ecc71'
+      pipes.forEach((p) => {
+        ctx.fillRect(p.x, 0, 40, p.top)
+        ctx.fillRect(p.x, p.top + p.gap, 40, cvs.height)
+      })
+
+      ctx.fillStyle = '#f1c40f'
+      ctx.beginPath()
+      ctx.arc(60, y, 10, 0, Math.PI * 2)
+      ctx.fill()
+
+      frame++
+      requestAnimationFrame(draw)
     }
 
-    setBird(newBird)
-    setPipes(newPipes)
-  }
+    function flap() {
+      vy = flapPower
+      if (soundOn) {
+        try {
+          const ctxa = new (window.AudioContext || window.webkitAudioContext)()
+          const o = ctxa.createOscillator()
+          const g = ctxa.createGain()
+          o.type = 'sine'
+          o.connect(g)
+          g.connect(ctxa.destination)
+          o.start(0)
+          g.gain.value = 0.04
+          g.gain.exponentialRampToValueAtTime(0.00001, ctxa.currentTime + 0.08)
+          o.stop(ctxa.currentTime + 0.09)
+        } catch (e) {}
+      }
+    }
 
-  useGameLoop(() => {
-    update()
+    function key(evt) {
+      if (evt.key === ' ' || evt.key === 'Enter') flap()
+    }
+    cvs.addEventListener('click', flap)
+    window.addEventListener('keydown', key)
+
     draw()
-  }, 30)
-
-  const draw = () => {
-    const ctx = canvasRef.current.getContext('2d')
-    ctx.fillStyle = 'skyblue'
-    ctx.fillRect(0, 0, 400, 300)
-
-    ctx.fillStyle = 'yellow'
-    ctx.fillRect(bird.x, bird.y, 20, 20)
-
-    ctx.fillStyle = 'green'
-    pipes.forEach((p) => {
-      ctx.fillRect(p.x, 0, PIPE_WIDTH, p.top)
-      ctx.fillRect(p.x, p.top + PIPE_GAP, PIPE_WIDTH, 300 - p.top - PIPE_GAP)
-    })
-
-    ctx.fillStyle = 'white'
-    ctx.fillText('Score: ' + score, 10, 20)
-  }
-
-  useEffect(() => {
-    draw()
-  }, [])
-
-  useEffect(() => {
-    window.addEventListener('keydown', (e) => e.code === 'Space' && jump())
-    return () => window.removeEventListener('keydown', jump)
-  })
+    return () => {
+      cvs.removeEventListener('click', flap)
+      window.removeEventListener('keydown', key)
+    }
+  }, [soundOn])
 
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-white">Flappy Bird - Score: {score}</h2>
-      <canvas ref={canvasRef} width={400} height={300} />
-      <button
-        onClick={jump}
-        className="mt-2 px-4 py-2 bg-yellow-500 text-black rounded"
-      >
-        Jump
-      </button>
+    <div style={{ width: 320, height: 208 }}>
+      <canvas id="flappy-cvs" style={{ width: '100%', height: '100%' }} />
+      <div style={{ fontSize: 12, color: '#111', marginTop: 6 }}>
+        Click or press Space/Enter to flap.
+      </div>
     </div>
   )
 }
-
-export default FlappyBird
