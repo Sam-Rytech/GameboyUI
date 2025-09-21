@@ -90,3 +90,99 @@ body{
   gap:6px;
 }
 
+/* dpad buttons */
+.dbtn {
+  background: var(--button-dark);
+  color:#fff;
+  width:36px;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:6px;
+  cursor:pointer;
+  user-select:none;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.3);
+  font-weight:700;
+}
+
+/* center empty space */
+.dbtn.empty {
+  background:transparent;
+  box-shadow:none;
+}
+
+/* a/b buttons */
+.ab-group {
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.ab-btn {
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:var(--accent);
+  color:white;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+  cursor:pointer;
+}
+
+/* start/select smaller */
+.small-ctrls {
+  display:flex;
+  gap:8px;
+  flex-direction:column;
+  align-items:center;
+}
+.sbtn {
+  padding:6px 10px;
+  border-radius:8px;
+  background:#e6e6e6;
+  border:1px solid #cfcfcf;
+  font-size:12px;
+  cursor:pointer;
+}
+
+/* menu area */
+.menu-row {
+  margin-top:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* cartridges menu */
+.cartridge {
+  background:#fff;
+  padding:6px 10px;
+  border-radius:8px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.select {
+  padding:6px 8px;
+  border-radius:6px;
+  border:1px solid #ddd;
+  background:#fafafa;
+  font-size:14px;
+}
+
+/* footer small helpers */
+.small {
+  font-size:12px;
+  color:#333;
+}
+
+/* responsive */
+@media (max-width:420px){
+  .gb-outer { width:94%; padding:16px; }
+  .screen-canvas { width:280px; height:180px; }
+  .dpad { width:96px; height:96px; }
+}
