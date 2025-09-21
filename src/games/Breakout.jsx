@@ -41,6 +41,24 @@ export default function Breakout() {
       else if (e.key === 'Left' || e.key === 'ArrowLeft') leftPressed = false
     })
 
+    function collisionDetection() {
+      for (let c = 0; c < brickColumnCount; c++) {
+        for (let r = 0; r < brickRowCount; r++) {
+          let b = bricks[c][r]
+          if (b.status === 1) {
+            if (
+              x > b.x &&
+              x < b.x + brickWidth &&
+              y > b.y &&
+              y < b.y + brickHeight
+            ) {
+              dy = -dy
+              b.status = 0
+            }
+          }
+        }
+      }
+    }
 
 
 
