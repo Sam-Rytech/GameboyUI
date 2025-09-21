@@ -33,5 +33,34 @@ export default function Minesweeper() {
     setBoard(newBoard)
   }
 
-  
+  return (
+    <div>
+      <h3>Minesweeper</h3>
+      {gameOver && <p>💥 Game Over!</p>}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${size}, 30px)`,
+        }}
+      >
+        {board.map((row, r) =>
+          row.map((cell, c) => (
+            <button
+              key={`${r}-${c}`}
+              onClick={() => revealCell(r, c)}
+              style={{
+                width: '30px',
+                height: '30px',
+                fontSize: '12px',
+                background: cell.revealed ? '#ddd' : '#666',
+                color: cell.mine ? 'red' : 'black',
+              }}
+            >
+              {cell.revealed ? (cell.mine ? '💣' : cell.adjacent || '') : ''}
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  )
 }
