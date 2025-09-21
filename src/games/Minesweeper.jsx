@@ -1,7 +1,50 @@
 // src/games/Minesweeper.jsx
 import React, { useState, useEffect } from 'react'
 
+const generateBoard = (size, mines) => {
+  const board = Array(size)
+    .fill()
+    .map(() => Array(size).fill({ revealed: false, mine: false, adjacent: 0 }))
 
+  let placedMines = 0
+  while (placedMines < mines) {
+    const r = Math.floor(Math.random() * size)
+    const c = Math.floor(Math.random() * size)
+    if (!board[r][c].mine) {
+      board[r][c] = { ...board[r][c], mine: true }
+      placedMines++
+    }
+  }
+
+  // Count adjacent mines
+  const dirs = [-1, 0, 1]
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (!board[r][c].mine) {
+        let count = 0
+        dirs.forEach((dr) =>
+          dirs.forEach((dc) => {
+            if (dr || dc) {
+              const nr = r + dr
+              const nc = c + dc
+              if (
+                nr >= 0 &&
+                nr < size &&
+                nc >= 0 &&
+                nc < size &&
+                board[nr][nc].mine
+              ) {
+                count++
+              }
+            }
+          })
+        )
+        board[r][c] = { ...board[r][c], adjacent: count }
+      }
+    }
+  }
+  return board
+}
 
 export default function Minesweeper() {
   const size = 8
